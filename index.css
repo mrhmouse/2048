@@ -1,0 +1,46 @@
+* {
+    padding: 0;
+    margin: 0;
+    box-sizing: border-box;
+}
+
+body {
+    background: #500848;
+    color: #eee;
+}
+
+header {
+    background: #100018;
+    font-family: monospace;
+    padding: 24px;
+}
+header h1 {
+    letter-spacing: 16px;
+}
+header p {
+    letter-spacing: 3px;
+}
+
+main {
+    background: #a0a0e0;
+    width: 700px;
+    margin: 48px auto;
+    border-radius: 48px;
+}
+main canvas {
+    background: #111;
+    width: 640px;
+    margin: 30px;
+}
+
+@media (max-width: 720px) {
+    main {
+	width: 100%;
+	margin: 0;
+	border-radius: 0;
+    }
+    main canvas {
+	width: 90%;
+	margin: 5%;
+    }
+}
