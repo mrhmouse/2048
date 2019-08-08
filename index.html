@@ -13,15 +13,8 @@
   <main>
     <canvas height="640" width="640"></canvas>
   </main>
+  <script src="util.js"></script>
+  <script src="game-ui.js"></script>
+  <script src="game-state.js"></script>
   <script src="index.js"></script>
-  <script>
-    let canvas = document.querySelector('main canvas')
-    let ui = new GameUI(canvas)
-    let state = new GameState
-    function render() {
-      ui.drawState(state)
-      requestAnimationFrame(render)
-    }
-    render()
-  </script>
 </body>
