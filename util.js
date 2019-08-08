@@ -19,3 +19,12 @@ function rotateLeft(grid) {
 function isNonZero(s) {
     return s !== 0
 }
+function isZero(s) {
+    return s === 0
+}
+function countZeroes(array) {
+    return array.filter(isZero).length
+}
+function sum(array, f) {
+    return array.reduce((sum, x) => sum+f(x), 0)
+}

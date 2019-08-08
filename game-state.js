@@ -54,3 +54,17 @@ GameState.prototype.combineDown = function() {
     this.combineLeft()
     this.tiles = rotateLeft(this.tiles)
 }
+GameState.prototype.addTiles = function(count, value) {
+    let numZeroes = sum(this.tiles, countZeroes)
+    if (numZeroes < count)
+	return false
+    while (count > 0) {
+	let y = Math.floor(Math.random() * this.tiles.length)
+	let x = Math.floor(Math.random() * this.tiles[0].length)
+	if (this.tiles[y][x] === 0) {
+	    --count
+	    this.tiles[y][x] = value
+	}
+    }
+    return true
+}
