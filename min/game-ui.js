@@ -5,17 +5,15 @@ function GameUI(canvas) {
 GameUI.prototype.drawState = function(state) {
     this.ctx.fillStyle = this.tileFillStyle(0)
     this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height)
-    let w = this.canvas.width / state.tiles.length
-    let h = this.canvas.height / state.tiles[0].length
-    state.tiles.forEach((row, y) => {
-	row.forEach((tile, x) => {
-	    this.ctx.fillStyle = this.tileFillStyle(tile)
-	    this.ctx.fillRect(x*w, y*h, w, h)
-	    this.ctx.font = this.tileFont(tile, w)
-	    this.ctx.fillStyle = this.textFillStyle(tile)
-	    let [dx, dy] = this.textOffset(tile, w, h)
-	    this.ctx.fillText(tile, dx+(x*w), dy+(y*h), w)
-	})
+    let w = this.canvas.width / state.width
+    let h = this.canvas.height / state.height
+    state.forEachTile((tile, x, y) => {
+	this.ctx.fillStyle = this.tileFillStyle(tile)
+	this.ctx.fillRect(x*w, y*h, w, h)
+	this.ctx.font = this.tileFont(tile, w)
+	this.ctx.fillStyle = this.textFillStyle(tile)
+	let [dx, dy] = this.textOffset(tile, w, h)
+	this.ctx.fillText(tile, dx+(x*w), dy+(y*h), w)
     })
 }
 GameUI.tileFillStyles = [
@@ -41,10 +39,9 @@ GameUI.prototype.tileFillStyle = function(tile) {
     if (match) return match[1]
     return GameUI.tileFillStyles[0][1]
 }
-GameUI.textFillStyles = [
-    [1024, '#eee'],
-    [16384, '#333']
-]
+GameUI.textFillStyles =
+    [[1024, '#eee'],
+     [16384, '#333']]
 GameUI.prototype.textFillStyle = function(tile) {
     let match = GameUI.textFillStyles.find(s => tile <= s[0])
     if (match) return match[1]

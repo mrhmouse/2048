@@ -5,6 +5,8 @@ function GameState(initialState) {
 	 [0, 0, 2, 0],
 	 [0, 0, 0, 0],
 	 [0, 0, 2, 0]]
+    this.height = this.tiles.length
+    this.width = this.tiles[0].length
 }
 GameState.prototype.slideLeft = function() {
     this.tiles = this.tiles.
@@ -68,3 +70,8 @@ GameState.prototype.addTiles = function(count, value) {
     }
     return true
 }
+GameState.prototype.forEachTile = function(f) {
+    this.tiles.forEach((row, y) => row.forEach((tile, x) => f(tile, x, y)))
+}
+
+
