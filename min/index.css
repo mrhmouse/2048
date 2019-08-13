@@ -1,0 +1,35 @@
+* {
+    padding: 0;
+    margin: 0;
+    box-sizing: border-box;
+}
+body {
+    background: #500848;
+    color: #eee;
+    text-align: center;
+}
+h1 {
+    background: #100018;
+    font-family: monospace;
+    padding: 24px;
+    letter-spacing: 16px;
+}
+h1 i {
+    letter-spacing: 3px;
+    display: block;
+    font-size: 0.2ex;
+    font-family: serif;
+}
+canvas {
+    background: #a0a0e0;
+    width: 700px;
+    margin: 48px auto;
+    border-radius: 48px;
+    padding: 32px;
+}
+@media (max-width: 720px) {
+    main canvas {
+	width: 90%;
+	margin: 5%;
+    }
+}
