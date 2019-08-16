@@ -6,8 +6,7 @@ let state = {
 	[0, 0, 0, 0, 2, 0],
 	[0, 0, 0, 0, 0, 0],
 	[0, 0, 0, 0, 2, 0],
-	[0, 0, 0, 0, 0, 0],
-    ]
+	[0, 0, 0, 0, 0, 0]]
 }
 
 let mutations = {
@@ -124,9 +123,7 @@ let events = {
     }
 }
 
-let game = {
-    state,
-    queue: [],
+let ui = {
     context: document.querySelector('canvas').getContext('2d'),
     colors: {
 	0: '#000', 2: '#3cc',
@@ -135,16 +132,12 @@ let game = {
 	128: '#f3a', 256: '#ff3', 512: '#a3f',
 	1024: '#eda', 2048: '#ade',
     },
-    update: function() {
-	while (this.queue.length)
-	    this.queue.shift().call(null, this.state)
-    },
-    draw: function() {
+    draw: function(state) {
 	this.clear(this.context)
 	this.drawBackground(this.context)
-	let w = this.context.canvas.width / this.state.w
-	let h = this.context.canvas.height / this.state.h
-	this.state.rows.forEach(
+	let w = this.context.canvas.width / state.w
+	let h = this.context.canvas.height / state.h
+	state.rows.forEach(
 	    (row, y) => row.forEach(
 		(value, x) => this.drawCell({ value, x, y, w, h })))
     },
@@ -182,9 +175,18 @@ let game = {
 	    (cell.x + dx)*cell.w,
 	    (cell.y + dy)*cell.h)
     },
+}
+
+let game = {
+    state, ui,
+    queue: [],
+    update: function() {
+	while (this.queue.length)
+	    this.queue.shift().call(null, this.state)
+    },
     loop: function() {
 	this.update()
-	this.draw()
+	this.ui.draw(this.state)
 	requestAnimationFrame(() => this.loop())
     },
 }
