@@ -89,7 +89,8 @@ let mutations = {
     },
     addTiles: function(count, value) {
 	return function({ w, h, rows }) {
-	    let numZeroes = rows.reduce((sum, row) => sum+row.filter(c => c == 0).length, 0)
+	    let numZeroes = rows.reduce(
+		(sum, row) => sum+row.filter(c => c == 0).length, 0)
 	    if (count > numZeroes)
 		return
 	    while (count > 0) {
@@ -102,6 +103,25 @@ let mutations = {
 	    }
 	}
     },
+}
+
+let events = {
+    keyup: function(event) {
+	switch (event.key) {
+	case 'ArrowUp': return [
+	    mutations.slideUp,
+	    mutations.addTiles(2, 2)]
+	case 'ArrowDown': return [
+	    mutations.slideDown,
+	    mutations.addTiles(2, 2)]
+	case 'ArrowLeft': return [
+	    mutations.slideLeft,
+	    mutations.addTiles(2, 2)]
+	case 'ArrowRight': return [
+	    mutations.slideRight,
+	    mutations.addTiles(2, 2)]
+	}
+    }
 }
 
 let game = {
@@ -162,50 +182,6 @@ let game = {
 	    (cell.x + dx)*cell.w,
 	    (cell.y + dy)*cell.h)
     },
-    onkeyup: function(event) {
-	switch (event.key) {
-	case 'ArrowUp':
-	    this.queue.push(mutations.slideUp)
-	    this.queue.push(mutations.addTiles(2, 2))
-	    break
-	case 'ArrowDown':
-	    this.queue.push(mutations.slideDown)
-	    this.queue.push(mutations.addTiles(2, 2))
-	    break
-	case 'ArrowLeft':
-	    this.queue.push(mutations.slideLeft)
-	    this.queue.push(mutations.addTiles(2, 2))
-	    break
-	case 'ArrowRight':
-	    this.queue.push(mutations.slideRight)
-	    this.queue.push(mutations.addTiles(2, 2))
-	    break
-	}
-    },
-    lastTouch: null,
-    ontouchstart: function(event) {
-	this.lastTouch = { x: event.screenX, y: event.screenY }
-    },
-    ontouchend: function(event) {
-	let touch = { x: event.screenX, y: event.screenY }
-	let dx = lastTouch.x - touch.x
-	let dy = lastTouch.y - touch.y
-	if (dx == 0 && dy == 0)
-	    return
-	if (Math.abs(dx) > Math.abs(dy)) {
-	    // it's a horizontal move
-	    if (dx > 0) {
-		this.slideRight()
-	    } else if (dx < 0) {
-		this.slideLeft()
-	    }
-	} else if (dy > 0) {
-	    this.slideDown()
-	} else if (dy < 0) {
-	    this.slideUp()
-	}
-	this.addTiles(2, 2)
-    },
     loop: function() {
 	this.update()
 	this.draw()
@@ -213,7 +189,10 @@ let game = {
     },
 }
 
-'keyup touchstart touchend'.split(' ').forEach(eventName => {
-    document.addEventListener(eventName, event => game['on'+eventName](event))
-})
+for (let [key, value] of Object.entries(events)) {
+    document.addEventListener(key, event => {
+	let mutations = value(event)
+	if (mutations) mutations.forEach(m => game.queue.push(m))
+    })
+}
 game.loop()
