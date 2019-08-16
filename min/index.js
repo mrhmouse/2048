@@ -10,64 +10,7 @@ let state = {
     ]
 }
 
-let game = {
-    state,
-    queue: [],
-    context: document.querySelector('canvas').getContext('2d'),
-    colors: {
-	0: '#000', 2: '#3cc',
-	4: '#fa8', 8: '#c3c',
-	16: '#48e', 32: '#e83', 64: '#3fa',
-	128: '#f3a', 256: '#ff3', 512: '#a3f',
-	1024: '#eda', 2048: '#ade',
-    },
-    update: function() {
-	while (this.queue.length)
-	    this.queue.shift().call(this)
-    },
-    draw: function() {
-	this.clear(this.context)
-	this.drawBackground(this.context)
-	let w = this.context.canvas.width / this.state.w
-	let h = this.context.canvas.height / this.state.h
-	this.state.rows.forEach(
-	    (row, y) => row.forEach(
-		(value, x) => this.drawCell({ value, x, y, w, h })))
-    },
-    clear: function() {
-	this.context.clearRect(
-	    0, 0,
-	    this.context.canvas.width,
-	    this.context.canvas.height)
-    },
-    drawBackground: function() {
-	this.context.fillStyle = '#111'
-	this.context.fillRect(
-	    0, 0,
-	    this.context.canvas.width,
-	    this.context.canvas.height)
-    },
-    drawCell: function(cell) {
-	this.drawCellBackground(cell)
-	this.drawCellForeground(cell)
-    },
-    drawCellBackground: function(cell) {
-	this.context.fillStyle = this.colors[cell.value] || '#f0f'
-	this.context.fillRect(cell.x*cell.w, cell.y*cell.h, cell.w, cell.h)
-    },
-    drawCellForeground: function(cell) {
-	this.context.fillStyle = cell.value ? '#000' : '#fff'
-	var scale = 2, dx = 0.28, dy = 0.65
-	if (cell.value > 9)
-	    scale = 2, dx = 0.18, dy = 0.65
-	if (cell.value > 99)
-	    scale = 3, dx = 0.15, dy = 0.55
-	this.context.font = `${cell.w/scale}px monospace`
-	this.context.fillText(
-	    cell.value,
-	    (cell.x + dx)*cell.w,
-	    (cell.y + dy)*cell.h)
-    },
+let mutations = {
     slideUp: function() {
 	let {w, h, rows} = this.state
 	for (var x = 0; x < w; ++x) {
@@ -149,35 +92,97 @@ let game = {
 	}
     },
     addTiles: function(count, value) {
-	let numZeroes = this.state.rows.reduce((sum, row) => sum+row.filter(c => c == 0).length, 0)
-	if (count > numZeroes)
-	    return
-	while (count > 0) {
-	    let x = Math.floor(Math.random()*this.state.w)
-	    let y = Math.floor(Math.random()*this.state.h)
-	    if (this.state.rows[y][x])
-		continue
-	    this.state.rows[y][x] = value
-	    --count
+	return function() {
+	    let numZeroes = this.state.rows.reduce((sum, row) => sum+row.filter(c => c == 0).length, 0)
+	    if (count > numZeroes)
+		return
+	    while (count > 0) {
+		let x = Math.floor(Math.random()*this.state.w)
+		let y = Math.floor(Math.random()*this.state.h)
+		if (this.state.rows[y][x])
+		    continue
+		this.state.rows[y][x] = value
+		--count
+	    }
 	}
+    },
+}
+
+let game = {
+    state,
+    queue: [],
+    context: document.querySelector('canvas').getContext('2d'),
+    colors: {
+	0: '#000', 2: '#3cc',
+	4: '#fa8', 8: '#c3c',
+	16: '#48e', 32: '#e83', 64: '#3fa',
+	128: '#f3a', 256: '#ff3', 512: '#a3f',
+	1024: '#eda', 2048: '#ade',
+    },
+    update: function() {
+	while (this.queue.length)
+	    this.queue.shift().call(this)
+    },
+    draw: function() {
+	this.clear(this.context)
+	this.drawBackground(this.context)
+	let w = this.context.canvas.width / this.state.w
+	let h = this.context.canvas.height / this.state.h
+	this.state.rows.forEach(
+	    (row, y) => row.forEach(
+		(value, x) => this.drawCell({ value, x, y, w, h })))
+    },
+    clear: function() {
+	this.context.clearRect(
+	    0, 0,
+	    this.context.canvas.width,
+	    this.context.canvas.height)
+    },
+    drawBackground: function() {
+	this.context.fillStyle = '#111'
+	this.context.fillRect(
+	    0, 0,
+	    this.context.canvas.width,
+	    this.context.canvas.height)
+    },
+    drawCell: function(cell) {
+	this.drawCellBackground(cell)
+	this.drawCellForeground(cell)
+    },
+    drawCellBackground: function(cell) {
+	this.context.fillStyle = this.colors[cell.value] || '#f0f'
+	this.context.fillRect(cell.x*cell.w, cell.y*cell.h, cell.w, cell.h)
+    },
+    drawCellForeground: function(cell) {
+	this.context.fillStyle = cell.value ? '#000' : '#fff'
+	var scale = 2, dx = 0.28, dy = 0.65
+	if (cell.value > 9)
+	    scale = 2, dx = 0.18, dy = 0.65
+	if (cell.value > 99)
+	    scale = 3, dx = 0.15, dy = 0.55
+	this.context.font = `${cell.w/scale}px monospace`
+	this.context.fillText(
+	    cell.value,
+	    (cell.x + dx)*cell.w,
+	    (cell.y + dy)*cell.h)
     },
     onkeyup: function(event) {
 	switch (event.key) {
 	case 'ArrowUp':
-	    this.queue.push(() => this.slideUp())
-	    this.queue.push(() => this.addTiles(2, 2))
+	    this.queue.push(mutations.slideUp)
+	    this.queue.push(mutations.addTiles(2, 2))
 	    break
 	case 'ArrowDown':
-	    this.queue.push(() => this.slideDown())
-	    this.queue.push(() => this.addTiles(2, 2))
+	    this.queue.push(mutations.slideDown)
+	    this.queue.push(mutations.addTiles(2, 2))
 	    break
 	case 'ArrowLeft':
-	    this.queue.push(() => this.slideLeft())
-	    this.queue.push(() => this.addTiles(2, 2))
+	    this.queue.push(mutations.slideLeft)
+	    this.queue.push(mutations.addTiles(2, 2))
 	    break
 	case 'ArrowRight':
-	    this.queue.push(() => this.slideRight())
-	    this.queue.push(() => this.addTiles(2, 2))
+	    this.queue.push(mutations.slideRight)
+	    this.queue.push(mutations.addTiles(2, 2))
 	    break
 	}
     },
