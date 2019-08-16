@@ -1,15 +1,18 @@
+let state = {
+    w: 6, h: 6,
+    rows: [
+	[0, 0, 0, 0, 0, 0],
+	[0, 0, 0, 0, 0, 0],
+	[0, 0, 0, 0, 2, 0],
+	[0, 0, 0, 0, 0, 0],
+	[0, 0, 0, 0, 2, 0],
+	[0, 0, 0, 0, 0, 0],
+    ]
+}
+
 let game = {
-    state: {
-	w: 6, h: 6,
-	rows: [
-	    [0, 0, 0, 0, 0, 0],
-	    [0, 0, 0, 0, 0, 0],
-	    [0, 0, 0, 0, 2, 0],
-	    [0, 0, 0, 0, 0, 0],
-	    [0, 0, 0, 0, 2, 0],
-	    [0, 0, 0, 0, 0, 0],
-	]
-    },
+    state,
+    queue: [],
     context: document.querySelector('canvas').getContext('2d'),
     colors: {
 	0: '#000', 2: '#3cc',
@@ -17,6 +20,10 @@ let game = {
 	16: '#48e', 32: '#e83', 64: '#3fa',
 	128: '#f3a', 256: '#ff3', 512: '#a3f',
 	1024: '#eda', 2048: '#ade',
+    },
+    update: function() {
+	while (this.queue.length)
+	    this.queue.shift().call(this)
     },
     draw: function() {
 	this.clear(this.context)
@@ -157,20 +164,20 @@ let game = {
     onkeyup: function(event) {
 	switch (event.key) {
 	case 'ArrowUp':
-	    this.slideUp()
-	    this.addTiles(2, 2)
+	    this.queue.push(() => this.slideUp())
+	    this.queue.push(() => this.addTiles(2, 2))
 	    break
 	case 'ArrowDown':
-	    this.slideDown()
-	    this.addTiles(2, 2)
+	    this.queue.push(() => this.slideDown())
+	    this.queue.push(() => this.addTiles(2, 2))
 	    break
 	case 'ArrowLeft':
-	    this.slideLeft()
-	    this.addTiles(2, 2)
+	    this.queue.push(() => this.slideLeft())
+	    this.queue.push(() => this.addTiles(2, 2))
 	    break
 	case 'ArrowRight':
-	    this.slideRight()
-	    this.addTiles(2, 2)
+	    this.queue.push(() => this.slideRight())
+	    this.queue.push(() => this.addTiles(2, 2))
 	    break
 	}
     },
@@ -199,6 +206,7 @@ let game = {
 	this.addTiles(2, 2)
     },
     loop: function() {
+	this.update()
 	this.draw()
 	requestAnimationFrame(() => this.loop())
     },
