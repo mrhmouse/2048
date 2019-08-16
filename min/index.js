@@ -11,8 +11,7 @@ let state = {
 }
 
 let mutations = {
-    slideUp: function() {
-	let {w, h, rows} = this.state
+    slideUp: function({ w, h, rows }) {
 	for (var x = 0; x < w; ++x) {
 	    for (var y = 0; y < h; ++y) {
 		let value = rows[y][x]
@@ -31,8 +30,7 @@ let mutations = {
 	    }
 	}
     },
-    slideDown: function() {
-	let {w, h, rows} = this.state
+    slideDown: function({ w, h, rows }) {
 	for (var x = 0; x < w; ++x) {
 	    for (var y = h-1; y >= 0; --y) {
 		let value = rows[y][x]
@@ -51,8 +49,7 @@ let mutations = {
 	    }
 	}
     },
-    slideLeft: function() {
-	let {w, h, rows} = this.state
+    slideLeft: function({ w, h, rows }) {
 	for (var y = 0; y < h; ++y) {
 	    for (var x = 0; x < w; ++x) {
 		let value = rows[y][x]
@@ -71,8 +68,7 @@ let mutations = {
 	    }
 	}
     },
-    slideRight: function() {
-	let {w, h, rows} = this.state
+    slideRight: function({ w, h, rows }) {
 	for (var y = 0; y < h; ++y) {
 	    for (var x = w-1; x >= 0; --x) {
 		let value = rows[y][x]
@@ -92,16 +88,16 @@ let mutations = {
 	}
     },
     addTiles: function(count, value) {
-	return function() {
-	    let numZeroes = this.state.rows.reduce((sum, row) => sum+row.filter(c => c == 0).length, 0)
+	return function({ w, h, rows }) {
+	    let numZeroes = rows.reduce((sum, row) => sum+row.filter(c => c == 0).length, 0)
 	    if (count > numZeroes)
 		return
 	    while (count > 0) {
-		let x = Math.floor(Math.random()*this.state.w)
-		let y = Math.floor(Math.random()*this.state.h)
-		if (this.state.rows[y][x])
+		let x = Math.floor(Math.random()*w)
+		let y = Math.floor(Math.random()*h)
+		if (rows[y][x])
 		    continue
-		this.state.rows[y][x] = value
+		rows[y][x] = value
 		--count
 	    }
 	}
@@ -121,7 +117,7 @@ let game = {
     },
     update: function() {
 	while (this.queue.length)
-	    this.queue.shift().call(this)
+	    this.queue.shift().call(null, this.state)
     },
     draw: function() {
 	this.clear(this.context)
