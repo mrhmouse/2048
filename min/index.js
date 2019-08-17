@@ -1,16 +1,5 @@
-let state = {
-    w: 6, h: 6,
-    rows: [
-	[0, 0, 0, 0, 0, 0],
-	[0, 0, 0, 0, 0, 0],
-	[0, 0, 0, 0, 2, 0],
-	[0, 0, 0, 0, 0, 0],
-	[0, 0, 0, 0, 2, 0],
-	[0, 0, 0, 0, 0, 0]]
-}
-
 let mutations = {
-    slideUp: function({ w, h, rows }) {
+    slideUp({ w, h, rows }) {
 	for (var x = 0; x < w; ++x) {
 	    for (var y = 0; y < h; ++y) {
 		let value = rows[y][x]
@@ -29,7 +18,7 @@ let mutations = {
 	    }
 	}
     },
-    slideDown: function({ w, h, rows }) {
+    slideDown({ w, h, rows }) {
 	for (var x = 0; x < w; ++x) {
 	    for (var y = h-1; y >= 0; --y) {
 		let value = rows[y][x]
@@ -48,7 +37,7 @@ let mutations = {
 	    }
 	}
     },
-    slideLeft: function({ w, h, rows }) {
+    slideLeft({ w, h, rows }) {
 	for (var y = 0; y < h; ++y) {
 	    for (var x = 0; x < w; ++x) {
 		let value = rows[y][x]
@@ -67,7 +56,7 @@ let mutations = {
 	    }
 	}
     },
-    slideRight: function({ w, h, rows }) {
+    slideRight({ w, h, rows }) {
 	for (var y = 0; y < h; ++y) {
 	    for (var x = w-1; x >= 0; --x) {
 		let value = rows[y][x]
@@ -86,7 +75,7 @@ let mutations = {
 	    }
 	}
     },
-    addTiles: function(count, value) {
+    addTiles(count, value) {
 	return function({ w, h, rows }) {
 	    let numZeroes = rows.reduce(
 		(sum, row) => sum+row.filter(c => c == 0).length, 0)
@@ -103,9 +92,8 @@ let mutations = {
 	}
     },
 }
-
 let events = {
-    keyup: function(event) {
+    keyup(event) {
 	switch (event.key) {
 	case 'ArrowUp': return [
 	    mutations.slideUp,
@@ -120,9 +108,8 @@ let events = {
 	    mutations.slideRight,
 	    mutations.addTiles(2, 2)]
 	}
-    }
+    },
 }
-
 let ui = {
     context: document.querySelector('canvas').getContext('2d'),
     colors: {
@@ -132,38 +119,41 @@ let ui = {
 	128: '#f3a', 256: '#ff3', 512: '#a3f',
 	1024: '#eda', 2048: '#ade',
     },
-    draw: function(state) {
-	this.clear(this.context)
-	this.drawBackground(this.context)
+    draw(state) {
 	let w = this.context.canvas.width / state.w
 	let h = this.context.canvas.height / state.h
-	state.rows.forEach(
-	    (row, y) => row.forEach(
-		(value, x) => this.drawCell({ value, x, y, w, h })))
+	this.clear(this.context)
+	this.drawBackground(this.context)
+	state.rows.forEach((row, y) => {
+	    row.forEach((value, x) => {
+		this.drawCell({ value, x, y, w, h })
+	    })
+	})
     },
-    clear: function() {
+    clear() {
 	this.context.clearRect(
 	    0, 0,
 	    this.context.canvas.width,
 	    this.context.canvas.height)
     },
-    drawBackground: function() {
+    drawBackground() {
 	this.context.fillStyle = '#111'
 	this.context.fillRect(
 	    0, 0,
 	    this.context.canvas.width,
 	    this.context.canvas.height)
     },
-    drawCell: function(cell) {
+    drawCell(cell) {
 	this.drawCellBackground(cell)
 	this.drawCellForeground(cell)
     },
-    drawCellBackground: function(cell) {
+    drawCellBackground(cell) {
 	this.context.fillStyle = this.colors[cell.value] || '#f0f'
 	this.context.fillRect(cell.x*cell.w, cell.y*cell.h, cell.w, cell.h)
     },
-    drawCellForeground: function(cell) {
+    drawCellForeground(cell) {
 	this.context.fillStyle = cell.value ? '#000' : '#fff'
+	// lol manual positioning
 	var scale = 2, dx = 0.28, dy = 0.65
 	if (cell.value > 9)
 	    scale = 2, dx = 0.18, dy = 0.65
@@ -172,29 +162,40 @@ let ui = {
 	this.context.font = `${cell.w/scale}px monospace`
 	this.context.fillText(
 	    cell.value,
-	    (cell.x + dx)*cell.w,
+ 	    (cell.x + dx)*cell.w,
 	    (cell.y + dy)*cell.h)
     },
 }
-
+let state = {
+    w: 6, h: 6,
+    rows: [
+	[0, 0, 0, 0, 0, 0],
+	[0, 0, 0, 0, 0, 0],
+	[0, 0, 0, 0, 2, 0],
+	[0, 0, 0, 0, 0, 0],
+	[0, 0, 0, 0, 2, 0],
+	[0, 0, 0, 0, 0, 0]]
+}
 let game = {
     state, ui,
-    queue: [],
-    update: function() {
-	while (this.queue.length)
-	    this.queue.shift().call(null, this.state)
+    updateQueue: [],
+    update() {
+	while (this.updateQueue.length)
+	    this.updateQueue.shift().call(null, this.state)
     },
-    loop: function() {
+    loop() {
 	this.update()
 	this.ui.draw(this.state)
 	requestAnimationFrame(() => this.loop())
     },
+    registerEvents(events) {
+	for (let [name, handler] of Object.entries(events)) {
+	    document.addEventListener(name, event => {
+		for (let mutation of handler(event) || [])
+		    this.updateQueue.push(mutation)
+	    })
+	}
+    },
 }
-
-for (let [key, value] of Object.entries(events)) {
-    document.addEventListener(key, event => {
-	let mutations = value(event)
-	if (mutations) mutations.forEach(m => game.queue.push(m))
-    })
-}
+game.registerEvents(events)
 game.loop()
